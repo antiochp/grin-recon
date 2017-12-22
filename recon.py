@@ -53,28 +53,36 @@ def get_block(hash):
 inputs = defaultdict(list)
 outputs = defaultdict(list)
 
-count = 0
-while count < threshold:
+current = tip['height']
+while current > 0:
 	block = get_block(bhash)
 	for x in block['inputs']:
 		inputs[x['commit']].append(x)
 	for x in block['outputs']:
 		outputs[x['commit']].append(x)
 	bhash = block['previous']
-	count += 1
-	if count % 250 == 0:
-		print('...slowly making progress ', count)
+	current -= 1
+	if current % 250 == 0:
+		print('...slowly making progress...', current)
 
+duplicate_inputs = []
 for x in inputs.values():
 	if len(x) > 1:
-		print('**** Found duplicate input: ' + x)
+		duplicate_inputs.append(x)
+		print('**** Found duplicate input: ')
+		pp.pprint(x)
 
+duplicate_outputs = []
 for x in outputs.values():
 	if len(x) > 1:
-		print('**** Found duplicate output: ' + x)
+		duplicate_outputs.append(x)
+		print('**** Found duplicate output: ')
+		pp.pprint(x)
 
-print('# Inputs: ' + str(len(inputs)))
-print('# Outputs: ' + str(len(outputs)))
+print('# Inputs:', len(inputs))
+print('# Outputs:', len(outputs))
+print('# Duplicate Inputs:', len(duplicate_inputs))
+print('# Duplicate Outputs:', len(duplicate_outputs))
 
 for x in inputs.keys():
 	input = inputs.get(x)[0]
@@ -132,6 +140,8 @@ print('\n')
 print('--------------------')
 print('Inputs: ', len(inputs))
 print('Outputs: ', len(outputs))
+print('*** Duplicate (sets) of inputs: ', len(duplicate_inputs))
+print('*** Duplicate (sets) of outputs: ', len(duplicate_outputs))
 print('*** Spent yet still in UTXO set: ', spent_but_utxo)
 print('*** Unspent but missing from UTXO set: ', unspent_no_utxo)
 print('--------------------')
