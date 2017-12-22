@@ -98,7 +98,7 @@ for x in outputs.values():
 
 print('# Unspent outputs: ' + str(unspent_count))
 print('\n')
-print('Now checking for discrepencies with the current UTXO set...')
+print('Now checking for discrepencies with the current UTXO set (please be patient) ...')
 for x in inputs.keys():
 	output = outputs.get(x)
 	utxo = get_utxo(x)
