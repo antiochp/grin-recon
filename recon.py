@@ -8,6 +8,9 @@ req = requests.get('http://127.0.0.1:13413/v1/chain')
 tip = req.json()
 bhash = tip['hash']
 
+# how far back should we look (block height from current head)
+threshold = 20000
+
 print('Current chain head: %s at %s' % (tip['hash'], tip['height']))
 print('Looking back through blocks...\n')
 def get_utxo(hash):
@@ -51,7 +54,7 @@ inputs = defaultdict(list)
 outputs = defaultdict(list)
 
 count = 0
-while count < 1000:
+while count < threshold:
 	block = get_block(bhash)
 	for x in block['inputs']:
 		inputs[x['commit']].append(x)
@@ -59,6 +62,8 @@ while count < 1000:
 		outputs[x['commit']].append(x)
 	bhash = block['previous']
 	count += 1
+	if count % 250 == 0:
+		print('...slowly making progress ', count)
 
 for x in inputs.values():
 	if len(x) > 1:
