@@ -8,9 +8,6 @@ req = requests.get('http://127.0.0.1:13413/v1/chain')
 tip = req.json()
 bhash = tip['hash']
 
-# how far back should we look (block height from current head)
-threshold = 20000
-
 print('Current chain head: %s at %s' % (tip['hash'], tip['height']))
 print('Looking back through blocks...\n')
 def get_utxo(hash):
@@ -22,6 +19,13 @@ def get_utxo(hash):
 			'commit': utxo[0]['commit'],
 			'height': utxo[0]['height'],
 		}
+
+def get_utxos_at_height(height):
+	url = 'http://127.0.0.1:13413/v1/chain/utxos/atheight?start_height=%s&end_height=%s' % (height, height)
+	print(url)
+	req = requests.get(url)
+	utxos = req.json()
+	pp.pprint(utxos)
 
 def get_block(hash):
 	req = requests.get('http://127.0.0.1:13413/v1/blocks/' + hash)
@@ -52,10 +56,12 @@ def get_block(hash):
 
 inputs = defaultdict(list)
 outputs = defaultdict(list)
+utxos = defaultdict(list)
 
 current = tip['height']
 while current > 0:
 	block = get_block(bhash)
+
 	for x in block['inputs']:
 		inputs[x['commit']].append(x)
 	for x in block['outputs']:
@@ -79,6 +85,13 @@ for x in outputs.values():
 		print('**** Found duplicate output: ')
 		pp.pprint(x)
 
+print('... getting all the utxos ...')
+for x in outputs.keys():
+	utxo = get_utxo(x)
+	if utxo:
+		utxos[x].append(utxo)
+
+print('\n')
 print('# Inputs:', len(inputs))
 print('# Outputs:', len(outputs))
 print('# Duplicate Inputs:', len(duplicate_inputs))
@@ -99,22 +112,6 @@ for x in outputs.values():
 print('# Unspent outputs: ' + str(unspent_count))
 print('\n')
 print('Now checking for discrepencies with the current UTXO set (please be patient) ...')
-for x in inputs.keys():
-	output = outputs.get(x)
-	utxo = get_utxo(x)
-	if utxo:
-		output = outputs.get(x)
-		if output:
-			output = output[0]
-			output['utxo'] = {
-				'height': utxo['height']
-			}
-		else:
-			outputs.insert(x, {
-				'utxo': {
-					'height': utxo['height']
-				}
-			})
 
 spent_but_utxo = 0
 unspent_no_utxo = 0
@@ -123,20 +120,24 @@ print('Spent outputs still in UTXO set')
 print('-------------------------------')
 for output in outputs.values():
 	output = output[0]
-	if output.get('height_spent') and output.get('utxo'):
+	utxo = utxos.get(output['commit'])
+	if output.get('height_spent') and utxo:
 		spent_but_utxo += 1
 		pp.pprint(output)
+		pp.pprint(utxo)
 print('\n')
 
 print('Unspent outputs missing from the UTXO set')
 print('-----------------------------------------')
 for output in outputs.values():
 	output = output[0]
-	if not output.get('height_spent') and not output.get('utxo'):
+	utxo = utxos.get(output['commit'])
+	if not output.get('height_spent') and not utxo:
 		unspent_no_utxo += 1
 		pp.pprint(output)
-
+		pp.pprint(utxo)
 print('\n')
+
 print('--------------------')
 print('Inputs: ', len(inputs))
 print('Outputs: ', len(outputs))
