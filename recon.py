@@ -77,6 +77,7 @@ for x in inputs.values():
 		duplicate_inputs.append(x)
 		print('**** Found duplicate input: ')
 		pp.pprint(x)
+print('\n')
 
 duplicate_outputs = []
 for x in outputs.values():
@@ -84,6 +85,7 @@ for x in outputs.values():
 		duplicate_outputs.append(x)
 		print('**** Found duplicate output: ')
 		pp.pprint(x)
+print('\n')
 
 print('... getting all the utxos ...')
 for x in outputs.keys():
@@ -140,11 +142,18 @@ print('\n')
 
 print('Duplicate inputs - ')
 for x in duplicate_inputs:
+	print('Inputs -')
 	pp.pprint(x)
+	print('Outputs -')
+	pp.pprint(outputs.get(x[0]['commit']))
+	print('Utxos - ')
+	pp.pprint(utxos.get(x[0]['commit']))
+print('\n')
 
 print('Duplicate outputs - ')
 for x in duplicate_outputs:
 	pp.pprint(x)
+print('\n')
 
 print('--------------------')
 print('Inputs: ', len(inputs))
