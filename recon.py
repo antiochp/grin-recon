@@ -138,6 +138,14 @@ for output in outputs.values():
 		pp.pprint(utxo)
 print('\n')
 
+print('Duplicate inputs - ')
+for x in duplicate_inputs:
+	pp.pprint(x)
+
+print('Duplicate outputs - ')
+for x in duplicate_outputs:
+	pp.pprint(x)
+
 print('--------------------')
 print('Inputs: ', len(inputs))
 print('Outputs: ', len(outputs))
