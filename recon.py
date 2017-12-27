@@ -16,7 +16,7 @@ def get_utxo(hash):
 	# fix this (pull batches at a time)
 	if utxo:
 		return {
-			'commit': utxo[0]['commit'],
+			'commit': hash,
 			'height': utxo[0]['height'],
 		}
 
